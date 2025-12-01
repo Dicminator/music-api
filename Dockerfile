@@ -7,21 +7,21 @@ EXPOSE 8080
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copia tudo pro container de build
+# Copia tudo para dentro da imagem de build
 COPY . .
 
-# Restaura dependências
-RUN dotnet restore "./MusicApi.csproj"
+# Restaura as dependências (vai detectar o .csproj automaticamente se só tiver um)
+RUN dotnet restore
 
-# Publica em modo Release
-RUN dotnet publish "./MusicApi.csproj" -c Release -o /app/publish
+# Publica em modo Release (também detecta o projeto automaticamente)
+RUN dotnet publish -c Release -o /app/publish
 
-# Fase final: só o runtime + app publicado
+# Fase final: runtime + app publicado
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# Porta padrão pro Koyeb
+# Porta usada no Koyeb
 ENV ASPNETCORE_URLS=http://0.0.0.0:8080
 
 ENTRYPOINT ["dotnet", "MusicApi.dll"]
